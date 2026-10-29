@@ -368,7 +368,7 @@ class MoodTracker:
         if current_mood == self.DEFAULT_MOOD:
             return original_prompt
 
-        # 在prompt开头注入情绪提示
+        # Keep the existing prompt prefix reusable when the current mood changes.
         mood_hint = f"[当前情绪状态: 你感到{current_mood}]\n"
 
         # 如果原prompt已经包含情绪相关内容，不重复添加
@@ -377,7 +377,7 @@ class MoodTracker:
 
         logger.info(f"[情绪追踪] {chat_id} 注入情绪: {current_mood}")
 
-        return mood_hint + original_prompt
+        return original_prompt + "\n\n" + mood_hint
 
     def reset_mood(self, chat_id: str):
         """

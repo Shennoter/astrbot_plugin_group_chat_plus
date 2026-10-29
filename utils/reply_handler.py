@@ -41,7 +41,7 @@ PLUGIN_TOOLS_REMINDER_PERSONA_FILTER = "_group_chat_plus_tools_reminder_persona_
 # 🔧 存储工具提醒的人格白名单（可选），用于避免 on_llm_request 重复查询
 PLUGIN_ALLOWED_TOOL_NAMES = "_group_chat_plus_allowed_tool_names"
 # 🆕 v1.2.2-hotfix.1: 存储插件静态系统指令，由 on_llm_request 追加到 system_prompt 末尾，
-# 提高 system prompt 缓存命中率（整块缓存，不依赖前缀匹配）
+# Keep stable instructions ahead of the changing request tail for prefix caching.
 PLUGIN_CUSTOM_STATIC_INSTRUCTIONS = "_group_chat_plus_static_instructions"
 
 
@@ -334,13 +334,13 @@ class ReplyHandler:
 
             if prompt_mode == "override" and extra_prompt and extra_prompt.strip():
                 # 覆盖模式：用户自定义提示词在前（静态），动态内容在后
-                # 🔧 v1.2.2-hotfix.1: sender_emphasis 提前到 formatted_message 之前，
-                # 让 AI 在阅读历史消息前就明确当前对话对象，避免被历史/窗口缓冲消息干扰
+                # Keep the reusable history before the changing reply target.
+                # Per-message sender metadata and the final target reminder stay intact.
                 full_prompt = (
                     extra_prompt.strip()
-                    + sender_emphasis
                     + "\n\n"
                     + formatted_message
+                    + sender_emphasis
                     + (
                         "\n" + smart_batch_reply_hint_text
                         if smart_batch_reply_hint_text
@@ -362,9 +362,9 @@ class ReplyHandler:
                 # prompt 仅保留动态内容，语义上属于"用户消息"的部分。
                 full_prompt = (
                     "[请严格遵循 system prompt 中的指令进行回复]\n\n"
-                    + sender_emphasis
                     + "\n"
                     + formatted_message
+                    + sender_emphasis
                     + (
                         "\n" + smart_batch_reply_hint_text
                         if smart_batch_reply_hint_text

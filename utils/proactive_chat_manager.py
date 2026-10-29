@@ -4651,7 +4651,7 @@ class ProactiveChatManager:
                     return
 
             # 更新情绪状态（如果启用，放在AI预判断之后避免影响判断）。
-            # 情绪提示改为在 on_llm_request 中追加到 system_prompt。
+            # The final hook appends the mood after history, keeping system text stable.
             _proactive_mood_hint = None
             if (
                 hasattr(plugin_instance, "mood_enabled")

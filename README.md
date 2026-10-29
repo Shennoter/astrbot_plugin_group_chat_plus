@@ -1,10 +1,17 @@
 # 群聊增强插件 (Chat Plus)
 
+> **缓存优化分支 · V1.2.3.hotfix.2-cache.1**
+>
+> 基于 Him666233 的原版维护。当前对话对象提醒、动态心情改为在历史上下文之后注入，
+> 减少换人接话、心情变化对模型前缀缓存的影响，保留原有发送者标记与群聊功能。
+> 更新源为 [Shennoter/astrbot_plugin_group_chat_plus](https://github.com/Shennoter/astrbot_plugin_group_chat_plus)。
+> 安装、验证方法及适用边界见 [缓存优化说明](docs/PROMPT_CACHE.md)。
+
 ---
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-V1.2.3.hotfix.2-blue.svg)](https://github.com/Him666233/astrbot_plugin_group_chat_plus)
+[![Version](https://img.shields.io/badge/version-V1.2.3.hotfix.2--cache.1-blue.svg)](https://github.com/Shennoter/astrbot_plugin_group_chat_plus)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A5v4.11.0-green.svg)](https://github.com/AstrBotDevs/AstrBot)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 

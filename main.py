@@ -32,7 +32,7 @@
 - @消息会跳过所有判断直接回复
 
 作者: Him666233
-版本: V1.2.3.hotfix.2
+版本: V1.2.3.hotfix.2-cache.1
 
 v1.2.1 更新内容：
 - 🆕 Web管理面板 - 全新可视化管理界面，支持JWT认证、访问日志、统计图表、IP安全管理
@@ -282,8 +282,8 @@ from .private_chat import PrivateChatMain  # 🆕 私信功能主处理模块
     "astrbot_plugin_group_chat_plus",
     "Him666233",
     "一个以AI读空气为主的群聊聊天效果增强插件",
-    "V1.2.3.hotfix.2",
-    "https://github.com/Him666233/astrbot_plugin_group_chat_plus",
+    "V1.2.3.hotfix.2-cache.1",
+    "https://github.com/Shennoter/astrbot_plugin_group_chat_plus",
 )
 class ChatPlus(Star):
     """
@@ -2917,7 +2917,7 @@ class ChatPlus(Star):
 
         # ========== 日志输出 ==========
         logger.info("=" * 50)
-        logger.info("群聊增强插件已加载 - V1.2.3.hotfix.2")
+        logger.info("群聊增强插件已加载 - V1.2.3.hotfix.2-cache.1")
         logger.info(
             f"🔘 群聊功能总开关: {'✓ 已启用' if self.enable_group_chat else '✗ 已禁用'}"
         )
@@ -7766,8 +7766,8 @@ class ChatPlus(Star):
         # 工具提醒改为在 on_llm_request 中基于当前会话最终工具集生成，
         # 这里不再提前把工具列表注入到 prompt 文本中，避免与实际可调用工具不一致。
 
-        # 🆕 v1.0.2: 更新情绪状态（如果启用），情绪提示改为在 on_llm_request 中
-        # 追加到 system_prompt，不再注入 user prompt。
+        # Pass the current mood to the final request hook, after stable history.
+        event.set_extra("_group_chat_plus_mood_hint", None)
         if self.mood_enabled and self.mood_tracker:
             if self.debug_mode:
                 logger.info("【步骤12.5】更新情绪状态")
@@ -11067,13 +11067,14 @@ class ChatPlus(Star):
             except Exception as e:
                 logger.warning(f"⚠️ 生成工具提醒失败（将跳过提醒，不影响主流程）: {e}")
 
-        # P2: 情绪提示追加到 system_prompt 末尾（由 _generate_and_send_reply /
-        # proactive_chat_manager 预先存入 event extra，此处统一处理）。
+        # A changing mood must not invalidate the system prompt and history prefix.
+        # Use the request tail: proactive chat calls provider.text_chat directly and
+        # does not forward extra_user_content_parts. Only original messages are saved.
         mood_hint = event.get_extra("_group_chat_plus_mood_hint", None)
         if mood_hint:
-            req.system_prompt += f"\n\n{mood_hint}"
+            req.prompt += f"\n\n{mood_hint}"
             if self.debug_mode:
-                logger.info(f"  ✅ 已追加情绪提示到 system_prompt")
+                logger.info("Appended mood hint after the request context")
 
         if self.debug_mode:
             logger.info("  ✅ 已恢复插件自定义上下文:")
@@ -11115,6 +11116,7 @@ class ChatPlus(Star):
             event.set_extra(PLUGIN_TOOLS_REMINDER_PERSONA_FILTER, None)
             event.set_extra(PLUGIN_ALLOWED_TOOL_NAMES, None)
             event.set_extra(PLUGIN_CUSTOM_STATIC_INSTRUCTIONS, None)
+            event.set_extra("_group_chat_plus_mood_hint", None)
             event.set_extra("_gcp_per_plugin_injections", None)
             # 简化日志：非debug模式下也显示，方便监控安全机制
             logger.info("[安全] 已清理LLM请求上下文缓存")
