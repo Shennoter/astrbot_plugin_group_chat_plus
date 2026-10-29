@@ -206,7 +206,7 @@ def test_mood_keeps_system_and_history_stable_and_clears_event(plugin, mood, pro
     request = Request(
         prompt="" if proactive else event.message, system_prompt="固定人格设定"
     )
-    # Proactive text_chat does not forward extra parts; regular requests can have memory.
+    # Legacy requests can lack extra parts; modern requests can include memory.
     memory_part = object()
     if proactive:
         assert not hasattr(request, "extra_user_content_parts")

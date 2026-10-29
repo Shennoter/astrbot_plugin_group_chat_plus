@@ -1,7 +1,7 @@
 # 缓存优化 fork
 
 本 fork 基于 Him666233 的 `V1.2.3.hotfix.2`，保留原作者署名。版本为
-`V1.2.3.hotfix.2-cache.1`，更新地址为
+`V1.2.3.hotfix.2-cache.2`，更新地址为
 <https://github.com/Shennoter/astrbot_plugin_group_chat_plus>。
 
 ## 优化内容
@@ -21,8 +21,9 @@
   `formatted_message` 之后；末尾的回复对象确认继续保留。
 - 普通群聊与主动群聊共享最终请求钩子，心情提示追加到 `req.prompt` 末尾，
   避免心情变化改写 `req.system_prompt`。
-- 主动聊天直接调用 `provider.text_chat()`，该路径不会转发 `extra_user_content_parts`，
-  因此这里使用请求正文末尾承载动态心情。它属于本次生成的请求文本；插件继续使用原始消息保存历史。
+- 主动聊天直接调用 `provider.text_chat()`，群聊和私聊路径均会转发第三方插件的
+  `extra_user_content_parts`，以保留生活日程等临时状态。没有临时内容时沿用旧调用参数。
+  自身心情继续由请求正文末尾承载；插件使用原始消息保存历史。
 - 请求结束时清理事件上的心情标记，避免复用事件时沿用上一轮心情。
 - 群聊、私聊的兼容心情注入方法也改为末尾追加。
 
@@ -53,7 +54,8 @@ python -m pytest -q tests
 ```
 
 真实收益还取决于模型及中转的缓存支持、保留时间、路由稳定性，以及历史窗口是否变化。
-第三方插件在系统提示词中注入动态状态，也会继续影响缓存；例如生活日程插件需要独立调整。
+第三方插件在系统提示词中注入动态状态，也会继续影响缓存。生活日程可配合
+[缓存优化 fork](https://github.com/Shennoter/astrbot_plugin_life_scheduler)，并开启其 `inject_as_temp`。
 因此不能由这些测试推算或保证真实缓存命中率。
 
 上线后按同一群聊、同一模型比较未缓存输入量、总输入量和实际费用。

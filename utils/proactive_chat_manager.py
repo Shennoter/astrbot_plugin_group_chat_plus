@@ -4809,6 +4809,10 @@ class ProactiveChatManager:
             # 调用AI生成
             try:
                 _generation_start = time.time()
+                extra_parts = getattr(req, "extra_user_content_parts", None)
+                provider_extra = (
+                    {"extra_user_content_parts": extra_parts} if extra_parts else {}
+                )
                 completion_result = await provider.text_chat(
                     prompt=req.prompt,
                     session_id=req.session_id,
@@ -4816,6 +4820,7 @@ class ProactiveChatManager:
                     system_prompt=req.system_prompt,
                     image_urls=req.image_urls,
                     func_tool_manager=None,
+                    **provider_extra,
                 )
                 _generation_elapsed = time.time() - _generation_start
 
